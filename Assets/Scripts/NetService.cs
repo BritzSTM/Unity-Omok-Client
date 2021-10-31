@@ -30,6 +30,7 @@ namespace Om
     {
         [SerializeField] private string _serverUrl;
         [SerializeField] private GameObject _connectView;
+        [SerializeField] private GameObject _contentView;
         [SerializeField] private GameObject _roomView;
 
         private Socket _sock;
@@ -39,10 +40,10 @@ namespace Om
 
             _sock.On(SystemEvents.connect, () => { 
                 Debug.Log("Connect");
-                _sock.Emit("Chat", "ABCDEFG");
+                //_sock.Emit("Chat", "ABCDEFG");
             });
 
-
+            _sock.On("ChatTo", (string s) => Debug.Log(s));
             _sock.On("JoinedChannel", JoinedChannel);
         }
 
@@ -59,7 +60,7 @@ namespace Om
         public void SendChat(ChatMessage message)
         { 
             string data = JsonConvert.SerializeObject(message);
-            _sock.Emit("Chat", data);
+            _sock.EmitJson("Chat", data);
 
             Debug.Log("Send Chat : " + data);
         }
