@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d310532f23a3dbb4e8388645fa8487b4, type: 3}
+  m_Name: PaimonEmoticonGroupSO
+  m_EditorClassIdentifier: 
+  DisplayName: Paimon01
+  CoverSprite: {fileID: 3622870831393582554, guid: 655455ca0f951464384e56207a4558b0, type: 3}
+  Emoticons:
+  - {fileID: 9144998467885320538, guid: 49ae07d81e6935d43812884861aea1a1, type: 3}
+  - {fileID: 4596696554499079502, guid: 427995f95f48b4d498147c50612b6509, type: 3}
+  - {fileID: 1416762712233143117, guid: dd31c9708d4b00a40acb7b2a4dc1e6e5, type: 3}
+  - {fileID: 118825850102439360, guid: 9e75db3b51346b74e990d4a2607543b9, type: 3}
+  - {fileID: 7245861429973730306, guid: c37bdd6da902e344aafcdaeb6e01d225, type: 3}
+  - {fileID: 9029342482758046678, guid: 769bba28ca2125d4399d48d8acdccfae, type: 3}
+  - {fileID: 8102607728984357118, guid: 5c06b5e40cf67f9498e72c04db0004f8, type: 3}
+  - {fileID: 6499288065223775807, guid: b555b54698fef94479865e236b3598db, type: 3}
+  - {fileID: 5638834995808832799, guid: e8eeac3ab5770c049946bc5d43df8a45, type: 3}
+  - {fileID: 3450631433317288139, guid: 067aba44c651f9549aa7d21451ac1219, type: 3}
+  - {fileID: 8228151041550841918, guid: cf9842683d96c404a806c790b007cf9a, type: 3}
+  - {fileID: 1184340123094342718, guid: 56e6d933aa904e640ba53e33894b1c36, type: 3}
+  - {fileID: 3180199752781168528, guid: 21969320e38a31e408c94a417f0abd9c, type: 3}
+  - {fileID: 1124590982577634469, guid: b039b39a582747d4a9875bec130914ad, type: 3}
+  - {fileID: 7402546430292000885, guid: 0cc36d28d47cfb7468a3c8a4b5bb82b7, type: 3}
+  - {fileID: 5307289184309431374, guid: 7cc715f2b0505429388b4fd2717a2843, type: 3}
+  - {fileID: 7541416556253759306, guid: ce1bd85996e1c48138690ff66f3e8317, type: 3}
+  - {fileID: 8473510670616163719, guid: a344bb52501c6438fae84d061005e085, type: 3}
+  - {fileID: 6765211500750003741, guid: 465f878b0c7874952ab441c1a732964f, type: 3}

@@ -5,20 +5,19 @@ using UnityEditor;
 namespace Om
 {
     [RequireComponent(typeof(Image))]
-    public class DynamicEmoticon : MonoBehaviour
+    public class DynamicEmoticon : Emoticon
     {
         [SerializeField] private Sprite[] _sprites;
         [SerializeField] private float _interval = 0.15f;
 
-        private Image _image;
         private float _accDeltaTime;
         private int _spriteIndex;
 
-        private void Awake()
+        protected override void Awake()
         {
-            Debug.Assert(_sprites != null && _sprites.Length > 1);
+            base.Awake();
 
-            _image = GetComponent<Image>();
+            Debug.Assert(_sprites != null && _sprites.Length > 1);
         }
 
         private void Update()
@@ -30,7 +29,8 @@ namespace Om
 
             _accDeltaTime = 0.0f;
             _spriteIndex = ++_spriteIndex % _sprites.Length;
-            _image.sprite = _sprites[_spriteIndex];
+
+            SetSprite(_sprites[_spriteIndex]);
         }
 
 #if UNITY_EDITOR

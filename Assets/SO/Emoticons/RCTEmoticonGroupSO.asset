@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d310532f23a3dbb4e8388645fa8487b4, type: 3}
+  m_Name: RCTEmoticonGroupSO
+  m_EditorClassIdentifier: 
+  DisplayName: RCT
+  CoverSprite: {fileID: -7415223466794719447, guid: 655455ca0f951464384e56207a4558b0, type: 3}
+  Emoticons:
+  - {fileID: 7688501791337556416, guid: d3330369af4816145b7ac29f0e1d4227, type: 3}
+  - {fileID: 495235091735628515, guid: c30bcfdea369d3f47a3715946fa654d5, type: 3}
+  - {fileID: 5096363998220195317, guid: 734f9aac23a7e374e9e2750b77f682dc, type: 3}
+  - {fileID: 737389716921364829, guid: 6717038575ee56d4d833148d9f729019, type: 3}
+  - {fileID: 3729637841109448914, guid: 2b1d793ab8931ac4ea3a9c79377af7ec, type: 3}
+  - {fileID: 3539510386561931671, guid: b004a58b002e01a4597a36f61230ce01, type: 3}
+  - {fileID: 6506611457360599171, guid: 62e497d218ee84c759f221ddeb607c6a, type: 3}
+  - {fileID: 1595033712779718269, guid: a34d72b94fdce4ef4abc79460c4d6943, type: 3}
+  - {fileID: 7908978911650416158, guid: bd39aeb75269f467f8078931fe76e3bb, type: 3}
+  - {fileID: 762916790400455669, guid: fc08b9b77b022428b9c6639e4ba6f040, type: 3}
