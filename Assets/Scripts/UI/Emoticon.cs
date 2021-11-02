@@ -12,8 +12,18 @@ namespace Om
     {
         public event UnityAction<Emoticon> OnClick;
 
-        [SerializeField] private string _displayName = "";
-        public string DisplayName => string.IsNullOrEmpty(_displayName) ? _image.sprite.name : _displayName;
+        [SerializeField] private string _displayName = string.Empty;
+        public string DisplayName
+        {
+            get
+            {
+                var image = _image;
+                if (image == null)
+                    image = GetComponent<Image>();
+
+                return string.IsNullOrEmpty(_displayName) ? image.sprite.name : _displayName;
+            }
+        }
 
         private Image _image;
         protected virtual void Awake()

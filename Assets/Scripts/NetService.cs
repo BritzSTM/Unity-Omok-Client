@@ -13,18 +13,7 @@ namespace Om
         public string[] Users;
     }
 
-    [System.Serializable]
-    public struct ChatMessage
-    {
-        public enum Type
-        {
-            Emoticon,
-            Message
-        };
 
-        public Type MessageType;
-        public string Data;
-    }
 
     public class NetService : MonoBehaviour
     {
@@ -32,19 +21,23 @@ namespace Om
         [SerializeField] private GameObject _connectView;
         [SerializeField] private GameObject _contentView;
         [SerializeField] private GameObject _roomView;
+        [SerializeField] private TMPro.TMP_InputField _nickNameField;
+        [SerializeField] private PlayerListViewController _playerListViewController;
+        [SerializeField] private ChatViewContoller _chatViewContoller;
 
         private Socket _sock;
         public void Connect(string nickName)
         {
             _sock = Socket.Connect(_serverUrl);
 
-            _sock.On(SystemEvents.connect, () => { 
+            _sock.On(SystemEvents.connect, () => {
                 Debug.Log("Connect");
-                //_sock.Emit("Chat", "ABCDEFG");
+                _sock.Emit("JoinChannel", _nickNameField.text);
             });
 
-            _sock.On("ChatTo", (string s) => Debug.Log(s));
+            _sock.On("ChatTo", ChatTo);
             _sock.On("JoinedChannel", JoinedChannel);
+            _sock.On("JoinedNewPlayer", JoinedNewPlayer);
         }
 
         private void JoinedChannel(string data)
@@ -54,15 +47,37 @@ namespace Om
             _roomView.SetActive(true);
 
             var channelInfo = JsonConvert.DeserializeObject<ChannelInfo>(data);
-            Debug.Log(channelInfo);
+            foreach (var nick in channelInfo.Users)
+            {
+                _playerListViewController.AddPlayer(nick);
+            }
+
+            Debug.Log("Joined Channel name : " + channelInfo.Name);
         }
 
-        public void SendChat(ChatMessage message)
+        private void JoinedNewPlayer(string data)
+        {
+            string nick = JsonConvert.DeserializeObject<string>(data);
+            _playerListViewController.AddPlayer(nick);
+        }
+
+        public void SendChat(ChatMessageData message)
         { 
             string data = JsonConvert.SerializeObject(message);
             _sock.EmitJson("Chat", data);
 
             Debug.Log("Send Chat : " + data);
+        }
+
+        private void ChatTo(string data)
+        {
+            var chatData = JsonConvert.DeserializeObject<ChatMessageData>(data);
+            _chatViewContoller.Speek(ChatWhoType.OtherPlayer, chatData);
+        }
+
+        private void OnDestroy()
+        {
+            _sock.Emit("LeaveChannel");
         }
     }
 }
