@@ -59,7 +59,7 @@ namespace WNet
         }
 
         private static bool applicationIsQuitting = false;
-        public void OnDestroy()
+        protected virtual void OnDestroy()
         {
             applicationIsQuitting = true;
         }

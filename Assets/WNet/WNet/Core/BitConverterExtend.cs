@@ -1,4 +1,4 @@
-namespace WNet
+namespace WNet.Core
 {
     public static class BitConverterExtend
     {

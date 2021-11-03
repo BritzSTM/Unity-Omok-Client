@@ -2,18 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
-using UnityEngine;
-using UnityEngine.Events;
+using System.Threading;
 
-namespace WNet
+namespace WNet.Core
 {
-    public class Transporter : SingletonMonoBehaviour<Transporter>
+    // tcp, udp, quic.... 메시지랑 독립적이어야함
+    public class Transporter
     {
         static public float SyncTickRate = 60; // Hz... sleep time -> 1000/SyncTickRate
         static public int BufferSize = 4096 * 2;
 
         private byte[] buffer;
         private Socket _sock;
+        private Thread _workerThread;
+     
         public void Send<T>(T value)
             where T : IBinarySerializable
         {
@@ -62,14 +64,14 @@ namespace WNet
             return new Message { Header = Header, Body = null };
         }
 
-        public void On(MessageType type, UnityAction<IBinarySerializable> action)
-        {
+        //public void On(MessageType type, UnityAction<IBinarySerializable> action)
+        //{
             
-        }
+        //}
 
-        public void Off(MessageType type, UnityAction<IBinarySerializable> action)
-        {
+        //public void Off(MessageType type, UnityAction<IBinarySerializable> action)
+        //{
 
-        }
+        //}
     }
 }

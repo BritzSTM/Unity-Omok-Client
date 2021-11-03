@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Diagnostics;
 
-namespace WNet
+namespace WNet.Core
 {
     public enum MessageType : ushort
     {
