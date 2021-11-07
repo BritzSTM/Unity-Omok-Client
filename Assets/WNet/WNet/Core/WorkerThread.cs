@@ -3,9 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
+using log4net;
 
 namespace WNet.Core
 {
+    internal interface IWorkerThreadScheduler
+    {
+        void AddTask(IWorkerTask task);
+        void RemoveTask(IWorkerTask task);
+    }
 
     internal interface IWorkerTask
     {
@@ -15,12 +21,14 @@ namespace WNet.Core
             Removed
         }
 
-        void Execute();
+        void Execute(IWorkerThreadScheduler scheduler);
         void OnChangedSchedule(ScheduleState state);
     }
 
     internal class WorkerThread
     {
+        private static readonly ILog s_logger = LogManager.GetLogger(typeof(WorkerThread));
+
         private const int kMS = 1000;   //millisecond
 
         private int _syncTickRate; // Hz... sleep time -> 1000/SyncTickRate
@@ -45,7 +53,12 @@ namespace WNet.Core
             _stopedAction = stopedAction;
         }
 
-        public void Start() => _rawWorkerThread.Start();
+        public void Start()
+        {
+            _rawWorkerThread.Start();
+            s_logger.Info("WorkerThread start");
+        }
+
         public void Stop() => _quitWorker = true;
         public ThreadState State => _rawWorkerThread.ThreadState;
 
@@ -54,13 +67,13 @@ namespace WNet.Core
             while (!_quitWorker)
             {
                 // 엄격하게 while문 내부에서의 객체복제, branch가 발생하지 않도록
-                while (!_quitWorker)
+                while (!_quitWorker && !_changedWorkerList)
                 {
                     var taskStartTime = DateTime.Now;
 
                     for (int i = 0; i < _workerTasks.Count; ++i)
                     {
-                        _workerTasks[i].Execute();
+                        _workerTasks[i].Execute(null);
                     }
 
                     var taskEndTime = DateTime.Now;

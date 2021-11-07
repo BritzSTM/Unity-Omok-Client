@@ -14,5 +14,15 @@ namespace WNet.Unity
             Debug.Log($"DummyWoker execute interval : {(nowTime - _prevTime).TotalSeconds}");
             _prevTime = nowTime;
         }
+
+        public void Execute(IWorkerThreadScheduler scheduler)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnChangedSchedule(IWorkerTask.ScheduleState state)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
