@@ -1,9 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
-using log4net;
+using System.Threading.Tasks;
+using Debug = System.Diagnostics.Debug;
 
 namespace WNet.Core
 {
@@ -21,91 +21,142 @@ namespace WNet.Core
             Removed
         }
 
-        void Execute(IWorkerThreadScheduler scheduler);
+        Task Execute(IWorkerThreadScheduler scheduler);
         void OnChangedSchedule(ScheduleState state);
     }
 
-    internal class WorkerThread
+    internal class WorkerThread : IWorkerThreadScheduler
     {
-        private static readonly ILog s_logger = LogManager.GetLogger(typeof(WorkerThread));
-
-        private const int kMS = 1000;   //millisecond
-
-        private int _syncTickRate; // Hz... sleep time -> 1000/SyncTickRate
-        private int _targetSleepTime;
+        private const long kMsTick = 10000;  // timespan 1 tick = 100ns  10000tick = 1ms
+        private const long kMs = kMsTick * 1000;
+        
+        private readonly int _syncTickRate;  // Hz
+        private readonly TimeSpan _targetSleepTime;
 
         private bool _quitWorker;
         private Thread _rawWorkerThread;
         private List<IWorkerTask> _workerTasks;
+        private Task[] _asyncTasks;
+        private bool _taskExecuting;
         private ConcurrentBag<IWorkerTask> _addWorkerBag;
         private ConcurrentBag<IWorkerTask> _removeWorkerBag;
         private bool _changedWorkerList;
         private Action _stopedAction;
 
-        public WorkerThread(int syncTickRate = 60, Action stopedAction = null)
+        public WorkerThread(int syncTickRate = 60, Action[] stopedActions = null)
         {
-            _rawWorkerThread = new Thread(WorkerLoop);
+            Debug.Assert(syncTickRate > 0);
 
+            _syncTickRate = syncTickRate;
+            _targetSleepTime = new TimeSpan(kMs / _syncTickRate);
+            
+            _rawWorkerThread = new Thread(WorkerLoop);
             _workerTasks = new List<IWorkerTask>();
+            _asyncTasks = new Task[0];
             _addWorkerBag = new ConcurrentBag<IWorkerTask>();
             _removeWorkerBag = new ConcurrentBag<IWorkerTask>();
 
-            _stopedAction = stopedAction;
+            if (stopedActions == null)
+                return;
+
+            foreach (var stopedAction in stopedActions)
+            {
+                _stopedAction += stopedAction;
+            }
         }
 
-        public void Start()
-        {
-            _rawWorkerThread.Start();
-            s_logger.Info("WorkerThread start");
-        }
-
+        public void Start() => _rawWorkerThread.Start();
         public void Stop() => _quitWorker = true;
         public ThreadState State => _rawWorkerThread.ThreadState;
 
         private void WorkerLoop()
         {
+            // 최대 내부에서의 객체복제, branch가 발생하지 않도록 할 것
+            Logger.Core.InfoFormat("Started WorkerThread. Update sync hz : {0}, Target sleep time {1, 6}",
+                _syncTickRate, _targetSleepTime.ToString());
+
+            DateTime taskStartTime, taskEndTime;
+            taskStartTime = taskEndTime = DateTime.Now;
             while (!_quitWorker)
             {
-                // 엄격하게 while문 내부에서의 객체복제, branch가 발생하지 않도록
-                while (!_quitWorker && !_changedWorkerList)
+                do
                 {
-                    var taskStartTime = DateTime.Now;
+                    AdaptiveSleep(taskStartTime, taskEndTime);
 
+                    taskStartTime = DateTime.Now;
+                    _taskExecuting = true;
+
+                    // 반드시 모든 Task 종료 후 이 스레드 context로 복귀해야 함
                     for (int i = 0; i < _workerTasks.Count; ++i)
                     {
-                        _workerTasks[i].Execute(null);
+                        _asyncTasks[i] = _workerTasks[i].Execute(this);
                     }
 
-                    var taskEndTime = DateTime.Now;
+                    Task.WaitAll(_asyncTasks);
 
-                    // 1초에 동기화 하는 횟수를 맞추기 위해 적응형 시간계산
-                    var diffMS = _targetSleepTime - (taskEndTime - taskStartTime).Milliseconds;
-                    Thread.Sleep(diffMS);
-                }
+                    _taskExecuting = false;
+                    taskEndTime = DateTime.Now;
+                } while (!_quitWorker && !_changedWorkerList);
 
                 if (!_changedWorkerList)
                     continue;
 
-                // 새롭게 worker들이 있다면 추가 및 시간 계산 및 이벤트
                 UpdateTaskList();
+                taskEndTime = DateTime.Now; // 새로운 작업 종료시간으로 갱신
             }
 
             _stopedAction?.Invoke();
+
+            Logger.Core.InfoFormat("Stopped WorkerThread");
+        }
+
+        private void AdaptiveSleep(DateTime startTime, DateTime endTime)
+        {
+            var diffSpan = _targetSleepTime - (endTime - startTime);
+
+            if(diffSpan.Ticks > 0)
+                Thread.Sleep(diffSpan);
         }
 
         private void UpdateTaskList()
         {
+            // 이 함수가 호출된 시점에서는 반드시 WorkerTasks를 실행 중이면 안된다.
+            Debug.Assert(!_taskExecuting);
+
+            IWorkerTask task;
+            while (_addWorkerBag.TryTake(out task))
+            {
+                _workerTasks.Add(task);
+                task.OnChangedSchedule(IWorkerTask.ScheduleState.Added);
+            }
+
+            while (_removeWorkerBag.TryTake(out task))
+            {
+                _workerTasks.Remove(task);
+                task.OnChangedSchedule(IWorkerTask.ScheduleState.Removed);
+            }
+
+            if(_asyncTasks.Length != _workerTasks.Count)
+                _asyncTasks = new Task[_workerTasks.Count];
+
             _changedWorkerList = false;
+            Logger.Core.InfoFormat("Updated WorkerThread TaskList");
         }
 
-        public void Add(IWorkerTask task)
+        /// <summary> worker thread schduler에 task를 추가합니다. 단 즉시 추가된다는 보장은 없습니다. </summary>
+        public void AddTask(IWorkerTask task)
         {
+            Debug.Assert(task != null);
+
             _addWorkerBag.Add(task);
             _changedWorkerList = true;
         }
 
-        public void Remove(IWorkerTask task)
+        /// <summary> worker thread schduler에서 task를 제거합니다. 단 즉시 제거된다는 보장은 없습니다. </summary>
+        public void RemoveTask(IWorkerTask task)
         {
+            Debug.Assert(task != null);
+
             _removeWorkerBag.Add(task);
             _changedWorkerList = true;
         }

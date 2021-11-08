@@ -1,3 +1,4 @@
+using System;
 using System.Xml;
 using UnityEngine;
 using log4net.Core;
@@ -27,6 +28,9 @@ namespace WNet.Unity
         private static void Configure()
         {
             var textAsset = Resources.Load<TextAsset>("log4net");
+            if (textAsset == null)
+                throw new InvalidOperationException("Not found log4net config file.");
+
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(textAsset.text);
 
