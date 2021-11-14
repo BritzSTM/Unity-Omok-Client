@@ -6,20 +6,21 @@ using System.Threading;
 
 namespace WNet.Core
 {
-    // tcp, udp, quic.... 메시지랑 독립적이어야함
-    public class Transporter
+    // tcp, udp, quic.... 메시지랑 독립적이어야함...
+    // udp는 한소캣으로 여러명 것을 받을 수 있음. 누구인지 알아야 함.
+    // id 가 메시지에 있어야 할 듯?
+    // 궁극적으로는 메시지를 조립해서 획득할 수 있도록 대기하는 것
+    // thread safe 해야 함
+    internal class Transporter
     {
-        static public float SyncTickRate = 60; // Hz... sleep time -> 1000/SyncTickRate
-        static public int BufferSize = 4096 * 2;
-
         private byte[] buffer;
         private Socket _sock;
-        private Thread _workerThread;
      
         public void Send<T>(T value)
             where T : IBinarySerializable
         {
             _sock.Send(buffer, 0, value.GetBinSerializdSize(), SocketFlags.None);
+            
         }
 
         public Message Receive()
@@ -74,4 +75,9 @@ namespace WNet.Core
 
         //}
     }
+
+    internal class TCPTransporter { }
+    // Who.... message....
+    internal class UDPTransporter { }
+    internal class QUICTransporter { }
 }

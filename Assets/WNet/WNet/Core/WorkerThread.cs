@@ -71,7 +71,7 @@ namespace WNet.Core
 
         private void WorkerLoop()
         {
-            // 최대 내부에서의 객체복제, branch가 발생하지 않도록 할 것
+            // 최대한 내부에서의 객체복제, branch가 발생하지 않도록 할 것
             Logger.Core.InfoFormat("Started WorkerThread. Update sync hz : {0}, Target sleep time {1, 6}",
                 _syncTickRate, _targetSleepTime.ToString());
 
